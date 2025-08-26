@@ -38,6 +38,7 @@ class AudioRecorder {
         this.transcriptionText = document.getElementById('transcriptionText');
         this.transcriptionStatus = document.getElementById('transcriptionStatus');
         this.copyButton = document.getElementById('copyButton');
+        this.pasteButton = document.getElementById('pasteButton');
 
         // Elementos de estilo de comunicación
         this.formalRadio = document.getElementById('formalRadio');
@@ -58,12 +59,16 @@ class AudioRecorder {
         // Elementos de personas objetivo
         this.onePersonRadio = document.getElementById('onePersonRadio');
         this.severalPersonsRadio = document.getElementById('severalPersonsRadio');
+
+        // Botón de reprocesar
+        this.reprocessButton = document.getElementById('reprocessButton');
     }
 
     setupEventListeners() {
         this.recordButton.addEventListener('click', () => this.toggleRecording());
         this.discardButton.addEventListener('click', () => this.discardAudio());
         this.copyButton.addEventListener('click', () => this.copyTranscription());
+        this.pasteButton.addEventListener('click', () => this.pasteFromClipboard());
 
         // Event listeners para radio buttons
         this.formalRadio.addEventListener('change', () => this.saveCommunicationStyle());
@@ -86,6 +91,11 @@ class AudioRecorder {
             this.saveProcessWithLLM();
             this.updateControlsState();
         });
+
+        this.reprocessButton.addEventListener('click', () => this.reprocessText());
+
+        // Event listener para actualizar estado del botón cuando cambie el texto
+        this.transcriptionText.addEventListener('input', () => this.updateControlsState());
         this.settingsButton.addEventListener('click', () => this.openSettings());
         this.closeModal.addEventListener('click', () => this.closeSettings());
         this.togglePassword.addEventListener('click', () => this.togglePasswordVisibility());
@@ -325,6 +335,50 @@ class AudioRecorder {
         }
     }
 
+    async pasteFromClipboard() {
+        try {
+            const text = await navigator.clipboard.readText();
+            
+            if (!text || text.trim() === '') {
+                alert('El portapapeles está vacío');
+                return;
+            }
+
+            // Quitar el atributo readonly temporalmente para poder pegar
+            this.transcriptionText.removeAttribute('readonly');
+            
+            // Pegar el texto
+            this.transcriptionText.value = text;
+            
+            // Volver a poner readonly
+            this.transcriptionText.setAttribute('readonly', '');
+
+            // Actualizar el estado de los controles
+            this.updateControlsState();
+
+            // Feedback visual
+            const originalHTML = this.pasteButton.innerHTML;
+            this.pasteButton.innerHTML = `
+                <svg class="paste-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+            `;
+
+            setTimeout(() => {
+                this.pasteButton.innerHTML = originalHTML;
+            }, 2000);
+
+            // Mostrar la sección de transcripción si estaba oculta
+            this.transcriptionSection.style.display = 'block';
+            this.transcriptionStatus.textContent = 'Texto pegado desde el portapapeles';
+            this.transcriptionStatus.className = 'transcription-status success';
+
+        } catch (error) {
+            console.error('Error al pegar:', error);
+            alert('Error al acceder al portapapeles. Asegúrate de que el navegador tenga permisos para acceder al portapapeles.');
+        }
+    }
+
     discardAudio() {
         this.audioControls.style.display = 'none';
         this.transcriptionSection.style.display = 'none';
@@ -513,8 +567,59 @@ class AudioRecorder {
         }
     }
 
+    async reprocessText() {
+        const currentText = this.transcriptionText.value.trim();
+
+        if (!currentText) {
+            alert('No hay texto para procesar');
+            return;
+        }
+
+        try {
+            const apiToken = await window.electronAPI.getApiToken();
+            if (!apiToken || apiToken.trim() === '') {
+                alert('Por favor, configura tu token de API en la configuración');
+                this.openSettings();
+                return;
+            }
+
+            // Deshabilitar botón y mostrar estado de carga
+            this.reprocessButton.disabled = true;
+            this.reprocessButton.textContent = 'Procesando...';
+            this.transcriptionStatus.textContent = 'Reprocesando texto con configuración actual...';
+            this.transcriptionStatus.className = 'transcription-status loading';
+
+            // Obtener configuraciones actuales
+            const communicationStyle = this.getCurrentCommunicationStyle();
+            const messageType = this.getCurrentMessageType();
+            const language = this.getCurrentLanguage();
+            const targetPersons = this.getCurrentTargetPersons();
+
+            // Procesar el texto con las configuraciones actuales
+            const improveResult = await window.electronAPI.improveText(currentText, apiToken, communicationStyle, messageType, language, targetPersons);
+
+            if (improveResult.success) {
+                this.transcriptionText.value = improveResult.text;
+                this.transcriptionStatus.textContent = 'Texto reprocesado exitosamente';
+                this.transcriptionStatus.className = 'transcription-status success';
+            } else {
+                this.transcriptionStatus.textContent = `Error al reprocesar: ${improveResult.error}`;
+                this.transcriptionStatus.className = 'transcription-status error';
+            }
+        } catch (error) {
+            console.error('Error al reprocesar texto:', error);
+            this.transcriptionStatus.textContent = 'Error al reprocesar el texto';
+            this.transcriptionStatus.className = 'transcription-status error';
+        } finally {
+            this.reprocessButton.disabled = false;
+            this.reprocessButton.textContent = 'Procesar texto';
+            this.updateControlsState(); // Actualizar estado de controles
+        }
+    }
+
     updateControlsState() {
         const llmEnabled = this.getCurrentProcessWithLLM() === 'yes';
+        const hasText = this.transcriptionText.value.trim() !== '';
 
         // Habilitar/deshabilitar radio buttons según el estado del LLM
         this.formalRadio.disabled = !llmEnabled;
@@ -525,6 +630,9 @@ class AudioRecorder {
         this.englishRadio.disabled = !llmEnabled;
         this.onePersonRadio.disabled = !llmEnabled;
         this.severalPersonsRadio.disabled = !llmEnabled;
+
+        // Habilitar/deshabilitar botón de reprocesar
+        this.reprocessButton.disabled = !llmEnabled || !hasText;
 
         // Obtener los grupos de controles para aplicar estilos visuales
         const controlGroups = document.querySelectorAll('.control-group');

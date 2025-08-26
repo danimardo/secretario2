@@ -362,14 +362,8 @@ class AudioRecorder {
                 return;
             }
 
-            // Quitar el atributo readonly temporalmente para poder pegar
-            this.transcriptionText.removeAttribute('readonly');
-            
-            // Pegar el texto
+            // Pegar el texto directamente (ya no es readonly)
             this.transcriptionText.value = text;
-            
-            // Volver a poner readonly
-            this.transcriptionText.setAttribute('readonly', '');
 
             // Actualizar el estado de los controles
             this.updateControlsState();

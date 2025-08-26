@@ -321,6 +321,9 @@ class AudioRecorder {
             this.recordStatus.textContent = 'Error al transcribir el audio';
             this.transcriptionStatus.textContent = 'Error al transcribir el audio';
             this.transcriptionStatus.className = 'transcription-status error';
+        } finally {
+            // Actualizar estado de controles después de completar la transcripción
+            this.updateControlsState();
         }
     }
 

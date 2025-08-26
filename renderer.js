@@ -12,7 +12,11 @@ class AudioRecorder {
         this.loadCommunicationStyle();
         this.loadMessageType();
         this.loadLanguage();
+        this.loadTargetPersons();
         this.loadProcessWithLLM();
+
+        // Actualizar estado inicial de los controles
+        setTimeout(() => this.updateControlsState(), 100);
     }
 
     initializeElements() {
@@ -50,6 +54,10 @@ class AudioRecorder {
         // Elementos de procesamiento con LLM
         this.llmYesRadio = document.getElementById('llmYesRadio');
         this.llmNoRadio = document.getElementById('llmNoRadio');
+
+        // Elementos de personas objetivo
+        this.onePersonRadio = document.getElementById('onePersonRadio');
+        this.severalPersonsRadio = document.getElementById('severalPersonsRadio');
     }
 
     setupEventListeners() {
@@ -67,8 +75,17 @@ class AudioRecorder {
         this.spanishRadio.addEventListener('change', () => this.saveLanguage());
         this.englishRadio.addEventListener('change', () => this.saveLanguage());
 
-        this.llmYesRadio.addEventListener('change', () => this.saveProcessWithLLM());
-        this.llmNoRadio.addEventListener('change', () => this.saveProcessWithLLM());
+        this.onePersonRadio.addEventListener('change', () => this.saveTargetPersons());
+        this.severalPersonsRadio.addEventListener('change', () => this.saveTargetPersons());
+
+        this.llmYesRadio.addEventListener('change', () => {
+            this.saveProcessWithLLM();
+            this.updateControlsState();
+        });
+        this.llmNoRadio.addEventListener('change', () => {
+            this.saveProcessWithLLM();
+            this.updateControlsState();
+        });
         this.settingsButton.addEventListener('click', () => this.openSettings());
         this.closeModal.addEventListener('click', () => this.closeSettings());
         this.togglePassword.addEventListener('click', () => this.togglePasswordVisibility());
@@ -244,9 +261,10 @@ class AudioRecorder {
                     const communicationStyle = this.getCurrentCommunicationStyle();
                     const messageType = this.getCurrentMessageType();
                     const language = this.getCurrentLanguage();
+                    const targetPersons = this.getCurrentTargetPersons();
 
                     // Mejorar el texto automáticamente
-                    const improveResult = await window.electronAPI.improveText(result.text, apiToken, communicationStyle, messageType, language);
+                    const improveResult = await window.electronAPI.improveText(result.text, apiToken, communicationStyle, messageType, language, targetPersons);
 
                     if (improveResult.success) {
                         this.transcriptionText.value = improveResult.text;
@@ -464,6 +482,62 @@ class AudioRecorder {
         } catch (error) {
             console.error('Error al guardar procesamiento LLM:', error);
         }
+    }
+
+    async loadTargetPersons() {
+        try {
+            const targetPersons = await window.electronAPI.getTargetPersons();
+            console.log('Personas objetivo cargadas:', targetPersons);
+            if (targetPersons === 'one') {
+                this.onePersonRadio.checked = true;
+            } else {
+                this.severalPersonsRadio.checked = true;
+            }
+        } catch (error) {
+            console.error('Error al cargar personas objetivo:', error);
+        }
+    }
+
+    getCurrentTargetPersons() {
+        return this.onePersonRadio.checked ? 'one' : 'several';
+    }
+
+    async saveTargetPersons() {
+        try {
+            const targetPersons = this.getCurrentTargetPersons();
+            console.log('Guardando personas objetivo:', targetPersons);
+            await window.electronAPI.saveTargetPersons(targetPersons);
+            console.log('Personas objetivo guardadas exitosamente');
+        } catch (error) {
+            console.error('Error al guardar personas objetivo:', error);
+        }
+    }
+
+    updateControlsState() {
+        const llmEnabled = this.getCurrentProcessWithLLM() === 'yes';
+
+        // Habilitar/deshabilitar radio buttons según el estado del LLM
+        this.formalRadio.disabled = !llmEnabled;
+        this.informalRadio.disabled = !llmEnabled;
+        this.mailRadio.disabled = !llmEnabled;
+        this.chatRadio.disabled = !llmEnabled;
+        this.spanishRadio.disabled = !llmEnabled;
+        this.englishRadio.disabled = !llmEnabled;
+        this.onePersonRadio.disabled = !llmEnabled;
+        this.severalPersonsRadio.disabled = !llmEnabled;
+
+        // Obtener los grupos de controles para aplicar estilos visuales
+        const controlGroups = document.querySelectorAll('.control-group');
+        controlGroups.forEach((group, index) => {
+            // Saltar el último grupo que es el de LLM
+            if (index < controlGroups.length - 1) {
+                if (llmEnabled) {
+                    group.classList.remove('disabled');
+                } else {
+                    group.classList.add('disabled');
+                }
+            }
+        });
     }
 
     async saveApiToken() {

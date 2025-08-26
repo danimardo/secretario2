@@ -43,9 +43,9 @@ let mainWindow;
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 585, // 450 + 30% = 585
-    height: 900,
+    height: 1000,
     minWidth: 520, // 400 + 30% = 520
-    minHeight: 700,
+    minHeight: 800,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -155,6 +155,15 @@ ipcMain.handle('save-process-with-llm', (event, processWithLLM) => {
   return { success: true };
 });
 
+ipcMain.handle('get-target-persons', () => {
+  return store.get('targetPersons', 'several'); // Por defecto varias personas
+});
+
+ipcMain.handle('save-target-persons', (event, targetPersons) => {
+  store.set('targetPersons', targetPersons);
+  return { success: true };
+});
+
 ipcMain.handle('transcribe-audio', async (event, filePath, apiToken) => {
   try {
     const FormData = require('form-data');
@@ -216,7 +225,7 @@ ipcMain.handle('transcribe-audio', async (event, filePath, apiToken) => {
   }
 });
 
-ipcMain.handle('improve-text', async (event, transcription, apiToken, communicationStyle, messageType, language) => {
+ipcMain.handle('improve-text', async (event, transcription, apiToken, communicationStyle, messageType, language, targetPersons) => {
   try {
     const https = require('https');
 
@@ -252,6 +261,11 @@ Take a deep breath and think about the best way to write the text colloquially a
     // Determinar idioma de salida
     const outputLanguage = language === 'english' ? 'English' : 'Spanish';
 
+    // Determinar el tipo de persona según la configuración
+    const personType = targetPersons === 'one'
+      ? 'Write the text in the first person singular, as if you were writing to a single person.'
+      : 'Write the text in the first person plural, as if you were writing to several people.';
+
     systemMessage += `
 
 # OUTPUT INSTRUCTIONS
@@ -259,7 +273,7 @@ Take a deep breath and think about the best way to write the text colloquially a
 - The language and everything has to be ${styleText}.
 - Only human-readable text is output.
 - do not use titles.
-- Write the text in the first person plural, as if you were writing to several people.
+- ${personType}
 - If necessary, produce numbered lists, not bullets.
 - Do not include warnings or notes, only the requested sections.
 - Do not repeat items in output sections.

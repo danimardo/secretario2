@@ -418,8 +418,8 @@ body {
 
 .transcription-content textarea {
     width: 100%;
-    min-height: 140px; /* 100 + 40% más alto */
-    max-height: 250px; /* 180 + 40% más alto */
+    min-height: 240px; /* ~12 líneas (20px por línea) */
+    max-height: 400px; /* Más espacio para textos largos */
     padding: 12px;
     border: 2px solid #e1e8ed;
     border-radius: 8px;
@@ -547,4 +547,28 @@ body {
 
 .radio-text {
     user-select: none;
+}
+
+/* Estilos para controles deshabilitados */
+.control-group.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.control-group.disabled .group-label {
+    color: rgba(255, 215, 0, 0.4); /* Amarillo dorado desaturado */
+}
+
+.control-group.disabled .radio-label {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.control-group.disabled input[type="radio"]:disabled {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: transparent;
+}
+
+.control-group.disabled input[type="radio"]:disabled:checked {
+    background: rgba(255, 71, 87, 0.3);
+    border-color: rgba(255, 71, 87, 0.3);
 }

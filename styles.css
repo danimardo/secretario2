@@ -678,8 +678,11 @@ body {
 }
 
 .reprocess-btn:disabled {
-    background: rgba(102, 126, 234, 0.3);
+    background: rgba(102, 126, 234, 0.15);
+    color: rgba(255, 255, 255, 0.4);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+    opacity: 0.4;
+    filter: grayscale(50%);
 }

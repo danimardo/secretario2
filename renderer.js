@@ -632,6 +632,7 @@ class AudioRecorder {
     updateControlsState() {
         const llmEnabled = this.getCurrentProcessWithLLM() === 'yes';
         const hasText = this.transcriptionText.value.trim() !== '';
+        const isProcessing = this.reprocessButton.textContent === 'Procesando...';
 
         // Habilitar/deshabilitar radio buttons según el estado del LLM
         this.formalRadio.disabled = !llmEnabled;
@@ -644,7 +645,13 @@ class AudioRecorder {
         this.severalPersonsRadio.disabled = !llmEnabled;
 
         // Habilitar/deshabilitar botón de reprocesar
-        this.reprocessButton.disabled = !llmEnabled || !hasText;
+        // Solo deshabilitar si no está habilitado LLM, no hay texto, o está procesando
+        if (!llmEnabled || !hasText) {
+            this.reprocessButton.disabled = true;
+        } else if (!isProcessing) {
+            // Solo habilitar si no está procesando
+            this.reprocessButton.disabled = false;
+        }
 
         // Obtener los grupos de controles para aplicar estilos visuales
         const controlGroups = document.querySelectorAll('.control-group');

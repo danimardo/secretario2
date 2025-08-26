@@ -33,6 +33,11 @@ class AudioRecorder {
         this.saveSettings = document.getElementById('saveSettings');
         this.cancelSettings = document.getElementById('cancelSettings');
 
+        // Elementos del modal de ayuda
+        this.helpButton = document.getElementById('helpButton');
+        this.helpModal = document.getElementById('helpModal');
+        this.closeHelpModal = document.getElementById('closeHelpModal');
+
         // Elementos de transcripción
         this.transcriptionSection = document.getElementById('transcriptionSection');
         this.transcriptionText = document.getElementById('transcriptionText');
@@ -102,6 +107,10 @@ class AudioRecorder {
         this.saveSettings.addEventListener('click', () => this.saveApiToken());
         this.cancelSettings.addEventListener('click', () => this.closeSettings());
 
+        // Event listeners para el modal de ayuda
+        this.helpButton.addEventListener('click', () => this.openHelp());
+        this.closeHelpModal.addEventListener('click', () => this.closeHelp());
+
         // Cerrar modal al hacer clic fuera
         this.settingsModal.addEventListener('click', (e) => {
             if (e.target === this.settingsModal) {
@@ -109,10 +118,19 @@ class AudioRecorder {
             }
         });
 
+        this.helpModal.addEventListener('click', (e) => {
+            if (e.target === this.helpModal) {
+                this.closeHelp();
+            }
+        });
+
         // Cerrar modal con Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.settingsModal.style.display === 'block') {
                 this.closeSettings();
+            }
+            if (e.key === 'Escape' && this.helpModal.style.display === 'block') {
+                this.closeHelp();
             }
         });
 
@@ -663,6 +681,14 @@ class AudioRecorder {
             console.error('Error al guardar token:', error);
             alert('Error al guardar el token');
         }
+    }
+
+    openHelp() {
+        this.helpModal.style.display = 'block';
+    }
+
+    closeHelp() {
+        this.helpModal.style.display = 'none';
     }
 }
 

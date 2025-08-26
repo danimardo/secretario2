@@ -1,13 +1,14 @@
 {
-  "name": "secretario2",
+  "name": "secretario-ai",
   "version": "1.0.0",
-  "description": "Aplicación de grabación de audio con Electron",
+  "description": "Secretario AI - Grabador de audio con transcripción automática",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
     "build": "electron-builder",
-    "dist": "electron-builder --publish=never"
+    "dist": "electron-builder --publish=never",
+    "pack": "electron-builder --dir"
   },
   "keywords": [
     "electron",
@@ -26,25 +27,42 @@
     "form-data": "^4.0.4"
   },
   "build": {
-    "appId": "com.secretario2.app",
-    "productName": "Secretario2",
+    "appId": "com.secretarioai.app",
+    "productName": "Secretario AI",
     "directories": {
-      "output": "dist"
+      "output": "build"
     },
     "files": [
       "main.js",
       "renderer.js",
       "index.html",
       "styles.css",
-      "preload.js"
+      "preload.js",
+      "assets/**/*"
     ],
     "win": {
-      "target": "nsis",
-      "icon": "assets/icon.ico"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "publisherName": "Secretario AI",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Secretario AI",
+      "uninstallDisplayName": "Secretario AI",
+      "license": "LICENSE.txt"
     },
     "mac": {
       "target": "dmg",
-      "icon": "assets/icon.icns"
+      "icon": "assets/icon.png"
     },
     "linux": {
       "target": "AppImage",

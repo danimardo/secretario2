@@ -203,9 +203,13 @@ body {
 }
 
 .footer-buttons {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
     display: flex;
     gap: 8px;
     align-items: center;
+    z-index: 100;
 }
 
 .settings-btn, .help-btn {

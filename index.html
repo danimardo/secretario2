@@ -57,6 +57,22 @@
 
         <div class="footer">
             <div class="controls-container">
+                <!-- Procesar con LLM -->
+                <div class="control-group">
+                    <span class="group-label">LLM:</span>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="processWithLLM" value="yes" id="llmYesRadio" checked>
+                            <span class="radio-text">Sí</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="processWithLLM" value="no" id="llmNoRadio">
+                            <span class="radio-text">No</span>
+                        </label>
+                    </div>
+                    <button id="reprocessButton" class="reprocess-btn">Procesar texto</button>
+                </div>
+
                 <!-- Estilo de comunicación -->
                 <div class="control-group">
                     <span class="group-label">Estilo:</span>
@@ -115,22 +131,6 @@
                             <span class="radio-text">Varias</span>
                         </label>
                     </div>
-                </div>
-
-                <!-- Procesar con LLM -->
-                <div class="control-group">
-                    <span class="group-label">LLM:</span>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="processWithLLM" value="yes" id="llmYesRadio" checked>
-                            <span class="radio-text">Sí</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="processWithLLM" value="no" id="llmNoRadio">
-                            <span class="radio-text">No</span>
-                        </label>
-                    </div>
-                    <button id="reprocessButton" class="reprocess-btn">Procesar texto</button>
                 </div>
             </div>
 

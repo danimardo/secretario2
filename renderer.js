@@ -649,8 +649,8 @@ class AudioRecorder {
         // Obtener los grupos de controles para aplicar estilos visuales
         const controlGroups = document.querySelectorAll('.control-group');
         controlGroups.forEach((group, index) => {
-            // Saltar el último grupo que es el de LLM
-            if (index < controlGroups.length - 1) {
+            // Saltar el primer grupo que es el de LLM
+            if (index > 0) {
                 if (llmEnabled) {
                     group.classList.remove('disabled');
                 } else {

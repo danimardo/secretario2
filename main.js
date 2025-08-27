@@ -287,7 +287,7 @@ INPUT:`;
     const userMessageBase = transcription;
 
     const requestData = JSON.stringify({
-      model: "mistral-medium-2505",
+      model: "mistral-medium-latest",
       temperature: 0.7,
       max_tokens: 200,
       messages: [
